@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Tiro</title>
+    </head>
+<body>
+    <div id="game-container">
+        <div id="score-display">Pontos: <span id="score">0</span></div>
+        <div id="timer-display">Tempo: <span id="time">30</span>s</div>
+        <div id="target"></div>
+        <div id="crosshair"></div>
+        
+        <div id="start-screen">
+            <h1>JOGO DE TIRO</h1>
+            <button id="start-button">COMEÇAR</button>
+            <p>Clique nos alvos para marcar pontos!</p>
+        </div>
+        
+        <div id="game-over">
+            <h2>FIM DE JOGO</h2>
+            <div id="final-score">Você marcou <span id="end-score">0</span> pontos!</div>
+            <button id="restart-button">JOGAR NOVAMENTE</button>
+        </div>
+    </div>
+
+    <script>
+        // Elementos do jogo
+        const gameContainer = document.getElementById('game-container');
+        const target = document.getElementById('target');
+        const crosshair = document.getElementById('crosshair');
+        const scoreDisplay = document.getElementById('score');
+        const timeDisplay = document.getElementById('time');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const endScoreDisplay = document.getElementById('end-score');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+
+        // Variáveis do jogo
+        let score = 0;
+        let timeLeft = 30;
+        let timer;
+        let gameRunning = false;
+
+        // Tamanho do jogo
+        const gameWidth = gameContainer.offsetWidth;
+        const gameHeight = gameContainer.offsetHeight;
+
+        // Configurar mira
+        document.addEventListener('mousemove', (e) => {
+            crosshair.style.left = e.clientX + 'px';
+            crosshair.style.top = e.clientY + 'px';
+        });
+
+        // Iniciar jogo
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', restartGame);
+
+        function startGame() {
+            startScreen.style.display = 'none';
+            gameRunning = true;
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.textContent = score;
+            timeDisplay.textContent = timeLeft;
+            
+            // Iniciar temporizador
+            timer = setInterval(() => {
+                timeLeft--;
+                timeDisplay.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+            
+            // Posicionar o primeiro alvo
+            moveTarget();
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            gameRunning = false;
+            endScoreDisplay.textContent = score;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        function restartGame() {
+            gameOverScreen.style.display = 'none';
+            startGame();
+        }
+
+        function moveTarget() {
+            if (!gameRunning) return;
+            
+            // Posição aleatória no jogo
+            const randomX = Math.floor(Math.random() * (gameWidth - target.offsetWidth));
+            const randomY = Math.floor(Math.random() * (gameHeight - target.offsetHeight));
+            
+            target.style.left = randomX + 'px';
+            target.style.top = randomY + 'px';
+            
+            // Dificuldade aumenta com o tempo
+            const delay = Math.max(500, 2000 - (score * 10));
+            
+            // Tempo para aparecer o próximo alvo
+            setTimeout(moveTarget, delay);
+        }
+
+        // Disparo
+        target.addEventListener('click', (e) => {
+            if (!gameRunning) return;
+            
+            score++;
+            scoreDisplay.textContent = score;
+            
+            // Efeito visual de acerto
+            const blood = document.createElement('div');
+            blood.className = 'blood-splatter';
+            blood.style.left = (e.clientX - 40) + 'px';
+            blood.style.top = (e.clientY - 40) + 'px';
+            gameContainer.appendChild(blood);
+            
+            // Remover o sangue após alguns segundos
+            setTimeout(() => {
+                blood.remove();
+            }, 500);
+            
+            // Mover o alvo imediatamente
+            moveTarget();
+        });
+    </script>
+</body>
+</html>
